@@ -6,23 +6,61 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardPlayerScore;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.LiteralText;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class FabricPlaytime implements DedicatedServerModInitializer {
+
+    Map<String, Integer> AFKtime = new HashMap<String, Integer>();
+    Map<String, double[]> rotation = new HashMap<String, double[]>();
 
     @Override
     public void onInitializeServer() {
         ServerTickCallback.EVENT.register(this::tick);
+
     }
 
     private void tick(MinecraftServer server) {
         Scoreboard scoreboard = server.getScoreboard();
-        for (PlayerEntity player : server.getPlayerManager().getPlayerList()) {             //gets all players, adds 1 tick of playtime and displays in minutes.
+        for (PlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            countAFK(player);
             String uuid = player.getUuidAsString();
             String name = player.getEntityName();
             ScoreboardPlayerScore playtime = scoreboard.getPlayerScore(uuid, scoreboard.getObjective("kg.playtime"));
             ScoreboardPlayerScore playtimeshow = scoreboard.getPlayerScore(name, scoreboard.getObjective("kg.playtimeshow"));
-            playtime.setScore(playtime.getScore() + 1);
+            if (isAFK(player)) playtime.setScore(playtime.getScore() + 1);
             playtimeshow.setScore(playtime.getScore() / 1200);
         }
+    }
+
+    private void countAFK(PlayerEntity player) {
+        String uuid = player.getUuidAsString();
+        double[] rotationList = new double[3];
+        rotationList[0] = player.getRotationVector().x;
+        rotationList[1] = player.getRotationVector().y;
+        rotationList[2] = player.getRotationVector().z;
+        if (rotation.get(uuid) == null) {
+            rotation.put(uuid, rotationList);
+        }
+        if (AFKtime.get(uuid) == null) AFKtime.put(uuid, 0);
+        double[] oldRotationList = rotation.get(uuid);
+        if (oldRotationList[0] == rotationList[0] && oldRotationList[1] == rotationList[1] && oldRotationList[2] == rotationList[2]) {
+            AFKtime.put(uuid, AFKtime.get(uuid) + 1);
+        }
+        else AFKtime.put(uuid, 0);
+        rotation.put(uuid, rotationList);
+    }
+
+    private boolean isAFK(PlayerEntity player) {
+        String uuid = player.getUuidAsString();
+        if (AFKtime.get(uuid) == null) AFKtime.put(uuid, 0);
+        Integer time = AFKtime.get(uuid);
+        if (time >= 6000) {
+            player.sendMessage(new LiteralText("AFK"), true);
+            return false;
+        }
+        else return true;
     }
 }

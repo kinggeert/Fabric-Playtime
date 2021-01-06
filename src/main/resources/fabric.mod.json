@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "FabricPlaytime",
+  "id": "fabric_playtime",
   "version": "${version}",
   "name": "FabricPlaytime",
   "description": "",

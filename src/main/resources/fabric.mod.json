@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "FabricPlaytime",
+  "version": "${version}",
+  "name": "FabricPlaytime",
+  "description": "",
+  "authors": ["kinggeert"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/FabricPlaytime/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "server": [
+      "me.kinggeert.fabricplaytime.fabricplaytime.FabricPlaytime"
+    ]
+  },
+  "mixins": [
+    "FabricPlaytime.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.10.8",
+    "fabric": "*",
+    "minecraft": "1.16.4"
+  }
+}

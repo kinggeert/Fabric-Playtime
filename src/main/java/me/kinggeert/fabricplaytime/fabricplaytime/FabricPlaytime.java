@@ -1,15 +1,23 @@
 package me.kinggeert.fabricplaytime.fabricplaytime;
 
+import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.DedicatedServerModInitializer;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.server.ServerTickCallback;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardPlayerScore;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static net.minecraft.command.argument.EntityArgumentType.getPlayer;
+import static net.minecraft.server.command.CommandManager.argument;
 
 public class FabricPlaytime implements DedicatedServerModInitializer {
 
@@ -18,8 +26,14 @@ public class FabricPlaytime implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
+        CommandRegistrationCallback.EVENT.register(((dispatcher, dedicated) -> {
+            dispatcher.register(CommandManager.literal("switchPlaytime")
+                .then(argument("target", EntityArgumentType.player()))
+                    .executes(ctx -> {
+                        return switchCommand(ctx, getPlayer(ctx, "target"));
+                    }));
+            }));
         ServerTickCallback.EVENT.register(this::tick);
-
     }
 
     private void tick(MinecraftServer server) {
@@ -62,5 +76,10 @@ public class FabricPlaytime implements DedicatedServerModInitializer {
             return false;
         }
         else return true;
+    }
+
+    private int switchCommand(CommandContext<ServerCommandSource> ctx, PlayerEntity target) {
+        System.out.println(target.getName());
+        return 1;
     }
 }

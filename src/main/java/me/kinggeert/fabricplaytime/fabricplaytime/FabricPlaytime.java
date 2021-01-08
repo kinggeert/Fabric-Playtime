@@ -73,7 +73,7 @@ public class FabricPlaytime implements DedicatedServerModInitializer {
         if (AFKtime.get(uuid) == null) AFKtime.put(uuid, 0);
         Integer time = AFKtime.get(uuid);
         if (time >= 6000) {
-            player.sendMessage(new LiteralText("AFK"), true);
+            player.sendMessage(new LiteralText("You are afk."), true);
             return false;
         }
         else return true;

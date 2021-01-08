@@ -28,10 +28,11 @@ public class FabricPlaytime implements DedicatedServerModInitializer {
     public void onInitializeServer() {
         CommandRegistrationCallback.EVENT.register(((dispatcher, dedicated) -> {
             dispatcher.register(CommandManager.literal("switchPlaytime")
-                .then(argument("target", EntityArgumentType.player()))
-                    .executes(ctx -> {
-                        return switchCommand(ctx, getPlayer(ctx, "target"));
-                    }));
+                .requires(source -> source.hasPermissionLevel(4))
+                    .then(argument("target", EntityArgumentType.player())
+                        .executes(ctx -> {
+                            return switchCommand(ctx, getPlayer(ctx, "target"));
+                        })));
             }));
         ServerTickCallback.EVENT.register(this::tick);
     }
@@ -79,7 +80,12 @@ public class FabricPlaytime implements DedicatedServerModInitializer {
     }
 
     private int switchCommand(CommandContext<ServerCommandSource> ctx, PlayerEntity target) {
-        System.out.println(target.getName());
+        MinecraftServer server = target.getServer();
+        Scoreboard scoreboard = server.getScoreboard();
+        ScoreboardPlayerScore old = scoreboard.getPlayerScore(target.getName().asString(), scoreboard.getObjective("hc_playTick"));
+        ScoreboardPlayerScore playtime = scoreboard.getPlayerScore(target.getUuidAsString(), scoreboard.getObjective("kg.playtime"));
+        playtime.setScore(old.getScore());
+        ctx.getSource().sendFeedback(new LiteralText(target.getName().asString() + " has recieved their playtime."), true);
         return 1;
     }
 }
